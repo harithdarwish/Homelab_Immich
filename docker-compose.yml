@@ -1,0 +1,43 @@
+name: immich
+
+services:
+  immich-server:
+    container_name: immich_server
+    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
+    volumes:
+      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - /etc/localtime:/etc/localtime:ro
+    env_file:
+      - .env
+    environment:
+      - IMMICH_MACHINE_LEARNING_ENABLED=false
+    ports:
+      - "2283:2283"
+    depends_on:
+      - database
+      - redis
+    restart: always
+
+  redis:
+    container_name: immich_redis
+    image: valkey/valkey:8-alpine
+    healthcheck:
+      test: ["CMD-SHELL", "valkey-cli ping || exit 1"]
+    restart: always
+
+  database:
+    container_name: immich_postgres
+    image: tensorchord/pgvector-pg16:v0.7.0
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE_NAME}
+      POSTGRES_INITDB_ARGS: '--data-checksums'
+    volumes:
+      - ${DB_DATA_LOCATION}:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
