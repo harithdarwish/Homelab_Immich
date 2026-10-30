@@ -7,7 +7,7 @@ git clone https://github.com/harithdarwish/Homelab_Immich.git
 
 2) Create your custom .env file for secrets and configuration.
 ```bash
-cd Homelab_Immich && vim .env
+cd ~/Homelab_Immich && vim .env
 ```
 
 4) Make the script executable. Install Docker & Docker Compose.
